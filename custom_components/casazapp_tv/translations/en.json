@@ -1,0 +1,106 @@
+{
+  "config": {
+    "flow_title": "{url}",
+    "step": {
+      "user": {
+        "title": "CasaZapp TV",
+        "description": "Make an API key on the server under Settings → Account → API keys. A read-only key shows what plays and the recordings; a key that may also control plans and stops recordings and stops streams.",
+        "data": {
+          "url": "Server address",
+          "api_key": "API key"
+        },
+        "data_description": {
+          "url": "For example http://192.168.1.10:8080 or https://tv.example.com",
+          "api_key": "Starts with czk_"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New API key",
+        "description": "The key for {url} no longer works. Make a new one under Settings → Account → API keys.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "This API key is not valid, or it was revoked.",
+      "cannot_connect": "Can't reach the server at this address."
+    },
+    "abort": {
+      "already_configured": "This server is already added.",
+      "reauth_successful": "The new key works."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "now_playing": { "name": "Now playing" },
+      "watching": { "name": "Watching" },
+      "recording_now": { "name": "Recording now" },
+      "next_recording": { "name": "Next recording" },
+      "planned": { "name": "Planned recordings" },
+      "recorded": { "name": "Recordings" },
+      "last_channel": { "name": "Last channel" },
+      "continue": { "name": "Continue watching" },
+      "channels": { "name": "Channels" },
+      "movies": { "name": "Movies" },
+      "series": { "name": "Series" },
+      "storage_free": { "name": "Recordings disk free" },
+      "provider_expires": { "name": "{name} ends" },
+      "provider_connections": { "name": "{name} connections" }
+    },
+    "binary_sensor": {
+      "recording": { "name": "Recording" },
+      "storage_full": { "name": "Recordings disk full" },
+      "provider_sync": { "name": "{name} sync" }
+    },
+    "update": {
+      "server": { "name": "Server" }
+    }
+  },
+  "services": {
+    "record": {
+      "name": "Record",
+      "description": "Plans a recording: now for some minutes, or from a start to a stop.",
+      "fields": {
+        "config_entry_id": { "name": "Server", "description": "Only needed with more than one server." },
+        "channel_id": { "name": "Channel", "description": "The channel's number on the server (see the API page)." },
+        "minutes": { "name": "Minutes", "description": "Record now for this long. Default 60." },
+        "start": { "name": "Start", "description": "Record later: from this time (with Stop)." },
+        "stop": { "name": "Stop", "description": "Record later: until this time (with Start)." },
+        "title": { "name": "Title", "description": "Without one, the programme from the guide names it." },
+        "takeover": { "name": "Take over", "description": "Start even when it stops someone watching." }
+      }
+    },
+    "stop_recording": {
+      "name": "Stop recording",
+      "description": "Stops a recording that runs; what was recorded stays.",
+      "fields": {
+        "config_entry_id": { "name": "Server", "description": "Only needed with more than one server." },
+        "recording_id": { "name": "Recording", "description": "The recording's number." }
+      }
+    },
+    "delete_recording": {
+      "name": "Remove recording",
+      "description": "Cancels a planned recording, or deletes a recorded one.",
+      "fields": {
+        "config_entry_id": { "name": "Server", "description": "Only needed with more than one server." },
+        "recording_id": { "name": "Recording", "description": "The recording's number." }
+      }
+    },
+    "stop_stream": {
+      "name": "Stop stream",
+      "description": "Stops what a device watches; it sees that this key stopped it.",
+      "fields": {
+        "config_entry_id": { "name": "Server", "description": "Only needed with more than one server." },
+        "stream_id": { "name": "Stream", "description": "The id from the Watching sensor or a media player." }
+      }
+    }
+  },
+  "exceptions": {
+    "which_server": { "message": "There is more than one CasaZapp TV server: choose one." },
+    "no_server": { "message": "That CasaZapp TV server isn't loaded." },
+    "forbidden": { "message": "This API key, or its profile, may not do this." },
+    "failed": { "message": "CasaZapp TV: {error}" },
+    "start_and_stop": { "message": "Give both a start and a stop, or neither." }
+  }
+}

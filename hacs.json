@@ -1,0 +1,7 @@
+{
+  "name": "CasaZapp TV",
+  "homeassistant": "2026.10.0",
+  "zip_release": true,
+  "filename": "casazapp_tv.zip",
+  "render_readme": true
+}
