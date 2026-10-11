@@ -1,4 +1,9 @@
-<img width="1686" height="368" alt="casazapp-tv-logo-light" src="https://github.com/user-attachments/assets/8d88dc9f-e830-4ae2-a31e-693001ff49bc" />
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![GitHub Release](https://img.shields.io/github/release/QuadNL/casazapp-tv-homeassistant.svg)](https://github.com/QuadNL/casazapp-tv-homeassistant/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Ko-Fi][ko_fi_shield]][ko_fi]
+
+<img width="1280" height="auto" alt="casazapp-tv-logo-light" src="https://github.com/user-attachments/assets/8d88dc9f-e830-4ae2-a31e-693001ff49bc" />
 
 # CasaZapp TV
 
@@ -76,4 +81,5 @@ The user assumes full responsibility for all content played through the CasaZapp
 
 If you enjoy using the app, please consider to buy me a coffee.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U2W120MCVZ)
+[ko_fi_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Ko-Fi&color=F16061&logo=ko-fi&logoColor=white
+[ko_fi]: https://ko-fi.com/U2W120MCVZ
