@@ -79,7 +79,9 @@ The user assumes full responsibility for all content played through the CasaZapp
 
 ## Support the project
 
-If you enjoy using the app, please consider to buy me a coffee.
+If you enjoy using CasaZapp TV, please consider to buy me a coffee. 
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U2W120MCVZ)
 
 [ko_fi_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Ko-Fi&color=F16061&logo=ko-fi&logoColor=white
 [ko_fi]: https://ko-fi.com/U2W120MCVZ
