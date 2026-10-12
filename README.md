@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Ko-Fi][ko_fi_shield]][ko_fi]
 
-<img width="1280" height="auto" alt="casazapp-tv-logo-light" src="https://github.com/user-attachments/assets/8d88dc9f-e830-4ae2-a31e-693001ff49bc" />
+<img width="600" height="auto" alt="casazapp-tv-logo-light" src="https://github.com/user-attachments/assets/8d88dc9f-e830-4ae2-a31e-693001ff49bc" />
 
 # CasaZapp TV
 
