@@ -35,7 +35,15 @@ class CasaZappCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            return await self.client.status()
+            data = await self.client.status()
+            # The apps it can play on (#256); a read-only key can see them too.
+            try:
+                data["devices"] = await self.client.devices()
+            except CasaZappAuthError:
+                raise
+            except CasaZappError:
+                data["devices"] = []
+            return data
         except CasaZappAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except CasaZappError as err:

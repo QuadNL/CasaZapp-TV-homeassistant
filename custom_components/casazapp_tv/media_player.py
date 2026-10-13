@@ -1,22 +1,30 @@
-"""A media player per device that watches: what it plays, the channel's logo, and stop."""
+"""
+A media player per device that watches: what it plays, the channel's logo, and stop. A CasaZapp
+TV app with "Allow remote control" on can also be sent a channel or recording, from the media
+browser or an automation, while the app is open.
+"""
 
 from __future__ import annotations
 
 import hashlib
 from typing import Any
 
+from homeassistant.components import media_source
 from homeassistant.components.media_player import (
+    BrowseMedia,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .api import CasaZappNotFound
+from .api import CasaZappError, CasaZappNotFound
+from .const import DOMAIN
 from .coordinator import CasaZappConfigEntry, CasaZappCoordinator
 from .entity import CasaZappEntity
 
@@ -26,6 +34,11 @@ Data = dict[str, Any]
 def _key(device: str) -> str:
     """A device's name as the server shows it ("Living room TV · Admin"), as a stable id."""
     return "player-" + hashlib.sha1(device.encode()).hexdigest()[:12]
+
+
+def _base(device: str) -> str:
+    """The device itself, without the profile the server adds ("Living room TV")."""
+    return device.split(" · ")[0]
 
 
 async def async_setup_entry(
@@ -51,6 +64,13 @@ async def async_setup_entry(
             v["device"]
             for v in coordinator.data.get("watching", [])
             if v.get("kind") != "recording" and v.get("device") and v["device"] not in known
+        ]
+        # An app with remote control that hasn't watched anything yet gets a player too.
+        bases = {_base(name) for name in known} | {_base(name) for name in new}
+        new += [
+            d["name"]
+            for d in coordinator.data.get("devices", [])
+            if d.get("remoteControl") and d["name"] not in bases
         ]
         for device in new:
             known.add(device)
@@ -84,12 +104,34 @@ class CasaZappPlayer(CasaZappEntity, MediaPlayerEntity):
         )
 
     @property
+    def _remote(self) -> Data | None:
+        """The app behind this player, when remote control is on there (#256)."""
+        return next(
+            (
+                d
+                for d in self.coordinator.data.get("devices", [])
+                if d.get("remoteControl") and d.get("name") == _base(self._device)
+            ),
+            None,
+        )
+
+    @property
     def state(self) -> MediaPlayerState:
-        return MediaPlayerState.PLAYING if self._viewer else MediaPlayerState.IDLE
+        if self._viewer:
+            return MediaPlayerState.PLAYING
+        remote = self._remote
+        # An app with remote control that isn't open can't be reached.
+        return MediaPlayerState.OFF if remote and not remote.get("online") else MediaPlayerState.IDLE
 
     @property
     def supported_features(self) -> MediaPlayerEntityFeature:
-        return MediaPlayerEntityFeature.STOP if self._viewer else MediaPlayerEntityFeature(0)
+        features = MediaPlayerEntityFeature(0)
+        remote = self._remote
+        if remote and remote.get("online"):
+            features |= MediaPlayerEntityFeature.PLAY_MEDIA | MediaPlayerEntityFeature.BROWSE_MEDIA
+        if self._viewer or (remote and remote.get("online")):
+            features |= MediaPlayerEntityFeature.STOP
+        return features
 
     @property
     def app_name(self) -> str:
@@ -156,7 +198,41 @@ class CasaZappPlayer(CasaZappEntity, MediaPlayerEntity):
         found = await self.coordinator.client.image(url)
         return found if found else (None, None)
 
+    async def async_browse_media(
+        self, media_content_type: MediaType | str | None = None, media_content_id: str | None = None
+    ) -> BrowseMedia:
+        """CasaZapp TV's own media browser: channels and recordings to play on this app."""
+        return await media_source.async_browse_media(
+            self.hass,
+            media_content_id or f"media-source://{DOMAIN}",
+            content_filter=lambda item: item.media_content_id.startswith(f"media-source://{DOMAIN}"),
+        )
+
+    async def async_play_media(self, media_type: MediaType | str, media_id: str, **kwargs: Any) -> None:
+        """A channel or recording from the media browser, played by the app itself (#256)."""
+        remote = self._remote
+        if not remote:
+            raise HomeAssistantError(f"Remote control is off on {self._device}")
+        parts = media_id.removeprefix(f"media-source://{DOMAIN}/").split("/")
+        if len(parts) != 3 or parts[1] not in ("live", "recording"):
+            raise HomeAssistantError("Only CasaZapp TV channels and recordings can play here")
+        kind = "channel" if parts[1] == "live" else "recording"
+        try:
+            await self.coordinator.client.remote_play(remote["id"], kind, int(parts[2]))
+        except CasaZappError as err:
+            raise HomeAssistantError(f"{self._device} can't play it now: {err}") from err
+        await self.coordinator.async_request_refresh()
+
     async def async_media_stop(self) -> None:
+        remote = self._remote
+        if remote and remote.get("online"):
+            # The app stops it itself, and goes back to where it was.
+            try:
+                await self.coordinator.client.remote_stop(remote["id"])
+            except CasaZappError:
+                pass
+            await self.coordinator.async_request_refresh()
+            return
         viewer = self._viewer
         if viewer:
             try:

@@ -115,6 +115,22 @@ class CasaZappClient:
     async def delete_recording(self, recording_id: int) -> None:
         await self._request("DELETE", f"/api/recordings/{recording_id}")
 
+    async def devices(self) -> list[dict[str, Any]]:
+        """The paired apps: remote control allowed there, and the app open now (server 0.5.8)."""
+        try:
+            return await self._request("GET", "/api/integration/devices")
+        except CasaZappNotFound:
+            return []  # An older server: no remote control.
+
+    async def remote_play(self, device_id: int, kind: str, item_id: int) -> None:
+        """Play a channel or recording on a CasaZapp TV app with remote control."""
+        await self._request(
+            "POST", f"/api/integration/devices/{device_id}/play", {"kind": kind, "id": item_id}
+        )
+
+    async def remote_stop(self, device_id: int) -> None:
+        await self._request("POST", f"/api/integration/devices/{device_id}/stop")
+
     async def stop_stream(self, stream_id: str) -> None:
         await self._request("POST", f"/api/streams/{stream_id}/stop", {})
 

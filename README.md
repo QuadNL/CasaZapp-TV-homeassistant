@@ -37,6 +37,8 @@ Brings your CasaZapp TV server into Home Assistant:
 - **Play on your speakers and TVs:** radio, channels and recordings from the media browser, on
   any speaker or player Home Assistant knows.
 - **Server updates:** an update entity tells you when a newer CasaZapp TV server is out.
+- **Play on the CasaZapp TV app:** play a channel or recording on the app, for example on your
+  television, and stop it there, where the app allows remote control (server and app 0.5.8).
 
 You need a CasaZapp TV server 0.5.7 or newer, Home Assistant 2026.10 or newer, and an API key from
 the server (Settings → Account → API keys). The recordings disk, the providers and server updates
